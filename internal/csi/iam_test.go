@@ -1,6 +1,7 @@
 package csi
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -207,3 +208,53 @@ func TestIAM(t *testing.T) {
 	}
 
 }
+
+func TestGetManualDeleteCommands(t *testing.T) {
+	//if os.Getenv("RUN_AWS_TESTS") != "1" {
+	//	t.Skip()
+	//}
+
+	// Empty iamResources{}
+	testIamResources := iamResources{}
+
+	actualResults := testIamResources.getManualDeleteCommands()
+	expectedResults := ""
+
+	if actualResults != expectedResults {
+		t.Fatalf("expected delete commands when empty: %s\n, got: %s", expectedResults, actualResults)
+	}
+
+	// With only instanceProfile
+	testIamResources.instanceProfile = &iamResource {
+		name: "instance-profile-test-name",
+		arn: "instance-profile-test-arn",
+	}
+
+	expectedDeleteInstanceProfile := fmt.Sprintf("aws iam delete-instance-profile --instance-profile-name %s", testIamResources.instanceProfile.name)
+	actualResults = testIamResources.getManualDeleteCommands()
+
+	if actualResults != expectedDeleteInstanceProfile {
+		t.Fatalf("expected delete commands when only instance profile: %q,\n got: %q", expectedDeleteInstanceProfile, actualResults)
+	}
+}
+
+//expectedResults := `aws iam remove-role-from-instance-profile --instance-profile-name instance-profile-test-name --role-name role-test-name \
+// aws iam delete-instance-profile --instance-profile-name instance-profile-test-name \
+// aws iam detach-role-policy --role-name role-test-name --policy-arn policy-test-arn \
+// aws iam delete-role --role-name role-test-name \
+// aws iam delete-policy --policy-arn policy-test-arn`
+
+//testIamResources.instanceProfile := iamResources {
+//	instanceProfile: &iamResource {
+//		name: "instance-profile-test-name",
+//		arn: "instance-profile-test-arn",
+//	},
+//	policy: &iamResource {
+//		name: "policy-test-name",
+//		arn: "policy-test-arn",
+//	},
+//	role: &iamResource {
+//		name: "role-test-name",
+//		arn: "role-test-arn",
+//	},
+//}
